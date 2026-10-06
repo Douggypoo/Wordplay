@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wordplay</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #07152f;
+    color: white;
+    min-height: 100vh;
+}
+
+/* =========================
+   HOME SCREEN
+========================= */
+
+#homeScreen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.logo {
+    font-size: 72px;
+    font-weight: 900;
+    color: #ffd84d;
+    text-shadow: 0 5px 0 #9d7b00;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 22px;
+    color: #c8d7f5;
+    margin-bottom: 40px;
+}
+
+.home-box {
+    width: min(700px, 95%);
+    background: #102650;
+    border: 2px solid #294d8e;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.home-box h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.player-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.player-input input {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    outline: none;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.add-btn {
+    background: #28c76f;
+    color: white;
+}
+
+.start-btn {
+    width: 100%;
+    margin-top: 20px;
+    background: #ffd84d;
+    color: #111;
+    font-size: 20px;
+    padding: 16px;
+}
+
+.player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #193563;
+    padding: 12px 15px;
+    border-radius: 8px;
+}
+
+.remove-btn {
+    background: #e74c3c;
+    color: white;
+    padding: 7px 12px;
+}
+
+/* =========================
+   GAME SCREEN
+========================= */
+
+#gameScreen {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.game-title {
+    font-size: 42px;
+    font-weight: 900;
+    color: #ffd84d;
+}
+
+.current-player {
+    background: #193563;
+    border: 2px solid #3c69ae;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.scoreboard {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.score-card {
+    flex: 1;
+    min-width: 130px;
+    background: #102650;
+    border: 2px solid #294d8e;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+
+.score-name {
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.score {
+    color: #ffd84d;
+    font-size: 25px;
+    font-weight: 900;
+    margin-top: 5px;
+}
+
+/* =========================
+   JEOPARDY BOARD
+========================= */
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    max-width: 1300px;
+    margin: auto;
+}
+
+.category {
+    min-height: 90px;
+    background: #17479d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.cell {
+    min-height: 105px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1d5fd1;
+    color: #ffd84d;
+    border-radius: 8px;
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        background-color 0.22s ease;
+}
+
+.cell:not(.used):hover {
+    transform: scale(1.08);
+    background: #3478ed;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    position: relative;
+    z-index: 10;
+}
+
+.cell.used {
+    background: #122d5c;
+    color: #52698f;
+    cursor: default;
+}
+
+.cell.used:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* =========================
+   QUESTION MODAL
+========================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+.modal-box {
+    width: min(850px, 95%);
+    background: #102650;
+    border: 3px solid #3d6db9;
+    border-radius: 18px;
+    padding: 35px;
+    text-align: center;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.6);
+}
+
+.question-value {
+    color: #ffd84d;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.question-text {
+    font-size: 34px;
+    font-weight: bold;
+    line-height: 1.3;
+    margin: 25px 0;
+}
+
+.special-badge {
+    display: none;
+    width: fit-content;
+    margin: 0 auto 15px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 18px;
+}
+
+.double-points {
+    background: #28c76f;
+    color: white;
+}
+
+.double-loss {
+    background: #e74c3c;
+    color: white;
+}
+
+.answer {
+    display: none;
+    background: #193563;
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 25px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.show-answer {
+    background: #3478ed;
+    color: white;
+}
+
+.correct {
+    background: #28c76f;
+    color: white;
+}
+
+.incorrect {
+    background: #e74c3c;
+    color: white;
+}
+
+.close-btn {
+    background: #555;
+    color: white;
+}
+
+/* =========================
+   RESULTS
+========================= */
+
+#resultsScreen {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.results-box {
+    width: min(700px, 95%);
+    background: #102650;
+    border: 2px solid #294d8e;
+    border-radius: 18px;
+    padding: 35px;
+    text-align: center;
+}
+
+.results-box h1 {
+    color: #ffd84d;
+    font-size: 48px;
+}
+
+.final-player {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: #193563;
+    margin: 8px 0;
+    border-radius: 8px;
+    font-size: 20px;
+}
+
+.winner {
+    border: 2px solid #ffd84d;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 800px) {
+    .logo {
+        font-size: 50px;
+    }
+
+    .game-title {
+        font-size: 30px;
+    }
+
+    .category {
+        font-size: 14px;
+    }
+
+    .cell {
+        min-height: 75px;
+        font-size: 20px;
+    }
+
+    .question-text {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     HOME SCREEN
+========================= -->
+
+<div id="homeScreen">
+
+    <div class="logo">WORDPLAY</div>
+
+    <div class="subtitle">
+        10th Grade English Challenge
+    </div>
+
+    <div class="home-box">
+
+        <h2>Add Players</h2>
+
+        <div class="player-input">
+            <input
+                id="playerName"
+                type="text"
+                placeholder="Enter player name"
+                maxlength="20"
+            >
+
+            <button class="add-btn" onclick="addPlayer()">
+                Add Player
+            </button>
+        </div>
+
+        <div id="playerList" class="player-list"></div>
+
+        <button class="start-btn" onclick="startGame()">
+            START GAME
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     GAME SCREEN
+========================= -->
+
+<div id="gameScreen">
+
+    <div class="game-header">
+
+        <div class="game-title">
+            WORDPLAY
+        </div>
+
+        <div id="currentPlayerDisplay" class="current-player">
+            Player's Turn
+        </div>
+
+    </div>
+
+    <div id="scoreboard" class="scoreboard"></div>
+
+    <div id="board" class="board"></div>
+
+</div>
+
+
+<!-- =========================
+     QUESTION MODAL
+========================= -->
+
+<div id="questionModal" class="modal">
+
+    <div class="modal-box">
+
+        <div id="questionValue" class="question-value"></div>
+
+        <div id="specialBadge" class="special-badge"></div>
+
+        <div id="questionText" class="question-text"></div>
+
+        <div id="answer" class="answer"></div>
+
+        <div class="modal-buttons">
+
+            <button
+                id="showAnswerBtn"
+                class="show-answer"
+                onclick="showAnswer()"
+            >
+                SHOW ANSWER
+            </button>
+
+            <button
+                id="correctBtn"
+                class="correct"
+                onclick="scoreQuestion(true)"
+                style="display:none;"
+            >
+                CORRECT
+            </button>
+
+            <button
+                id="incorrectBtn"
+                class="incorrect"
+                onclick="scoreQuestion(false)"
+                style="display:none;"
+            >
+                INCORRECT
+            </button>
+
+            <button
+                class="close-btn"
+                onclick="closeQuestion()"
+            >
+                CLOSE
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     RESULTS SCREEN
+========================= -->
+
+<div id="resultsScreen">
+
+    <div class="results-box">
+
+        <h1>GAME OVER!</h1>
+
+        <div id="finalScores"></div>
+
+        <button
+            class="start-btn"
+            onclick="location.reload()"
+        >
+            PLAY AGAIN
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   GAME DATA
+========================= */
+
+let players = [];
+let currentPlayer = 0;
+let currentQuestion = null;
+let remainingQuestions = 25;
+
+const DOUBLE_POINTS_COUNT = 3;
+const DOUBLE_LOSS_COUNT = 3;
+
+
+/* =========================
+   QUESTIONS
+========================= */
+
+const questions = [
+
+    /* =====================
+       GRAMMAR
+    ===================== */
+
+    {
+        category: "Grammar",
+        value: 100,
+        question: "What is the verb in this sentence: \"The dog ran home.\"?",
+        answer: "Ran"
+    },
+
+    {
+        category: "Grammar",
+        value: 200,
+        question: "Which sentence is correct?",
+        answer: "She went to the store."
+    },
+
+    {
+        category: "Grammar",
+        value: 300,
+        question: "What is a noun?",
+        answer: "A person, place, thing, or idea."
+    },
+
+    {
+        category: "Grammar",
+        value: 400,
+        question: "What is the adjective in this sentence: \"The red car is fast.\"?",
+        answer: "Red"
+    },
+
+    {
+        category: "Grammar",
+        value: 500,
+        question: "What is a pronoun?",
+        answer: "A word that replaces a noun, such as he, she, it, or they."
+    },
+
+
+    /* =====================
+       VOCABULARY
+    ===================== */
+
+    {
+        category: "Vocabulary",
+        value: 100,
+        question: "What does the word \"happy\" mean?",
+        answer: "Feeling good or joyful."
+    },
+
+    {
+        category: "Vocabulary",
+        value: 200,
+        question: "What is a synonym for \"big\"?",
+        answer: "Large"
+    },
+
+    {
+        category: "Vocabulary",
+        value: 300,
+        question: "What is an antonym?",
+        answer: "A word with the opposite meaning."
+    },
+
+    {
+        category: "Vocabulary",
+        value: 400,
+        question: "What does \"ancient\" mean?",
+        answer: "Very old."
+    },
+
+    {
+        category: "Vocabulary",
+        value: 500,
+        question: "What does \"reluctant\" mean?",
+        answer: "Not wanting to do something; hesitant."
+    },
+
+
+    /* =====================
+       LITERARY DEVICES
+    ===================== */
+
+    {
+        category: "Literary Devices",
+        value: 100,
+        question: "What literary device compares two things using \"like\" or \"as\"?",
+        answer: "Simile"
+    },
+
+    {
+        category: "Literary Devices",
+        value: 200,
+        question: "What literary device gives human qualities to something that is not human?",
+        answer: "Personification"
+    },
+
+    {
+        category: "Literary Devices",
+        value: 300,
+        question: "What literary device is an extreme exaggeration?",
+        answer: "Hyperbole"
+    },
+
+    {
+        category: "Literary Devices",
+        value: 400,
+        question: "What literary device directly compares two things without using \"like\" or \"as\"?",
+        answer: "Metaphor"
+    },
+
+    {
+        category: "Literary Devices",
+        value: 500,
+        question: "What literary device repeats the same beginning sound in nearby words?",
+        answer: "Alliteration"
+    },
+
+
+    /* =====================
+       READING
+    ===================== */
+
+    {
+        category: "Reading",
+        value: 100,
+        question: "What is the main idea of a passage?",
+        answer: "The most important point or message."
+    },
+
+    {
+        category: "Reading",
+        value: 200,
+        question: "What do we call a person in a story?",
+        answer: "A character"
+    },
+
+    {
+        category: "Reading",
+        value: 300,
+        question: "What is the setting of a story?",
+        answer: "Where and when the story takes place."
+    },
+
+    {
+        category: "Reading",
+        value: 400,
+        question: "What is the theme of a story?",
+        answer: "The main lesson, message, or idea."
+    },
+
+    {
+        category: "Reading",
+        value: 500,
+        question: "What is an inference?",
+        answer: "A conclusion you make using clues and what you already know."
+    },
+
+
+    /* =====================
+       WRITING
+    ===================== */
+
+    {
+        category: "Writing",
+        value: 100,
+        question: "What is a paragraph?",
+        answer: "A group of sentences about one main idea."
+    },
+
+    {
+        category: "Writing",
+        value: 200,
+        question: "What is a topic sentence?",
+        answer: "A sentence that tells the main idea of a paragraph."
+    },
+
+    {
+        category: "Writing",
+        value: 300,
+        question: "What is a thesis statement?",
+        answer: "The main claim or argument of an essay."
+    },
+
+    {
+        category: "Writing",
+        value: 400,
+        question: "What can you use to support a claim in an essay?",
+        answer: "Evidence, facts, examples, or details."
+    },
+
+    {
+        category: "Writing",
+        value: 500,
+        question: "What is the purpose of a conclusion?",
+        answer: "To wrap up the main ideas and finish the writing."
+    }
+
+];
+
+
+/* =========================
+   ADD PLAYER
+========================= */
+
+function addPlayer() {
+
+    const input = document.getElementById("playerName");
+
+    const name = input.value.trim();
+
+    if (name === "") {
+        return;
+    }
+
+    if (players.length >= 6) {
+        alert("You can only have up to 6 players.");
+        return;
+    }
+
+    players.push({
+        name: name,
+        score: 0
+    });
+
+    input.value = "";
+
+    updatePlayerList();
+}
+
+
+/* =========================
+   REMOVE PLAYER
+========================= */
+
+function removePlayer(index) {
+
+    players.splice(index, 1);
+
+    updatePlayerList();
+}
+
+
+/* =========================
+   UPDATE PLAYER LIST
+========================= */
+
+function updatePlayerList() {
+
+    const list = document.getElementById("playerList");
+
+    list.innerHTML = "";
+
+    players.forEach((player, index) => {
+
+        const row = document.createElement("div");
+
+        row.className = "player-row";
+
+        row.innerHTML = `
+            <span>${escapeHTML(player.name)}</span>
+
+            <button
+                class="remove-btn"
+                onclick="removePlayer(${index})"
+            >
+                Remove
+            </button>
+        `;
+
+        list.appendChild(row);
+
+    });
+}
+
+
+/* =========================
+   START GAME
+========================= */
+
+function startGame() {
+
+    if (players.length === 0) {
+        alert("Add at least one player first!");
+        return;
+    }
+
+    players.forEach(player => {
+        player.score = 0;
+    });
+
+    currentPlayer = 0;
+    remainingQuestions = 25;
+
+    assignSpecialQuestions();
+
+    document.getElementById("homeScreen").style.display = "none";
+
+    document.getElementById("gameScreen").style.display = "block";
+
+    createBoard();
+
+    updateScoreboard();
+
+    updateCurrentPlayer();
+
+}
+
+
+/* =========================
+   RANDOM SPECIAL QUESTIONS
+========================= */
+
+function assignSpecialQuestions() {
+
+    questions.forEach(question => {
+        question.type = "normal";
+    });
+
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+
+    for (
+        let i = 0;
+        i < DOUBLE_POINTS_COUNT;
+        i++
+    ) {
+        shuffled[i].type = "double-points";
+    }
+
+    for (
+        let i = DOUBLE_POINTS_COUNT;
+        i < DOUBLE_POINTS_COUNT + DOUBLE_LOSS_COUNT;
+        i++
+    ) {
+        shuffled[i].type = "double-loss";
+    }
+
+}
+
+
+/* =========================
+   CREATE BOARD
+========================= */
+
+function createBoard() {
+
+    const board = document.getElementById("board");
+
+    board.innerHTML = "";
+
+    const categories = [
+        "Grammar",
+        "Vocabulary",
+        "Literary Devices",
+        "Reading",
+        "Writing"
+    ];
+
+    const values = [
+        100,
+        200,
+        300,
+        400,
+        500
+    ];
+
+
+    /* Categories */
+
+    categories.forEach(category => {
+
+        const categoryDiv = document.createElement("div");
+
+        categoryDiv.className = "category";
+
+        categoryDiv.textContent = category;
+
+        board.appendChild(categoryDiv);
+
+    });
+
+
+    /*
+       The board is laid out row-by-row,
+       so create the cells in category order.
+    */
+
+    for (let value of values) {
+
+        for (let category of categories) {
+
+            const cell = document.createElement("div");
+
+            cell.className = "cell";
+
+            cell.textContent = "$" + value;
+
+            cell.dataset.category = category;
+
+            cell.dataset.value = value;
+
+            cell.onclick = function() {
+                openQuestion(category, value, cell);
+            };
+
+            board.appendChild(cell);
+
+        }
+
+    }
+
+}
+
+
+/* =========================
+   OPEN QUESTION
+========================= */
+
+function openQuestion(category, value, cell) {
+
+    if (cell.classList.contains("used")) {
+        return;
+    }
+
+    const question = questions.find(q =>
+        q.category === category &&
+        q.value === value
+    );
+
+    if (!question) {
+        return;
+    }
+
+    currentQuestion = {
+        question: question,
+        cell: cell
+    };
+
+
+    document.getElementById("questionValue").textContent =
+        "$" + value;
+
+
+    document.getElementById("questionText").textContent =
+        question.question;
+
+
+    document.getElementById("answer").textContent =
+        question.answer;
+
+
+    document.getElementById("answer").style.display =
+        "none";
+
+
+    document.getElementById("showAnswerBtn").style.display =
+        "inline-block";
+
+
+    document.getElementById("correctBtn").style.display =
+        "none";
+
+
+    document.getElementById("incorrectBtn").style.display =
+        "none";
+
+
+    const badge =
+        document.getElementById("specialBadge");
+
+
+    badge.style.display = "none";
+
+    badge.className = "special-badge";
+
+
+    if (question.type === "double-points") {
+
+        badge.textContent = "DOUBLE POINTS";
+
+        badge.classList.add("double-points");
+
+        badge.style.display = "block";
+
+    }
+
+    else if (question.type === "double-loss") {
+
+        badge.textContent = "DOUBLE LOSS";
+
+        badge.classList.add("double-loss");
+
+        badge.style.display = "block";
+
+    }
+
+
+    document.getElementById("questionModal").style.display =
+        "flex";
+
+}
+
+
+/* =========================
+   SHOW ANSWER
+========================= */
+
+function showAnswer() {
+
+    document.getElementById("answer").style.display =
+        "block";
+
+    document.getElementById("showAnswerBtn").style.display =
+        "none";
+
+    document.getElementById("correctBtn").style.display =
+        "inline-block";
+
+    document.getElementById("incorrectBtn").style.display =
+        "inline-block";
+
+}
+
+
+/* =========================
+   SCORE QUESTION
+========================= */
+
+function scoreQuestion(correct) {
+
+    if (!currentQuestion) {
+        return;
+    }
+
+    const question = currentQuestion.question;
+
+    const baseValue = question.value;
+
+    let points = baseValue;
+
+
+    /* =====================
+       NORMAL
+    ===================== */
+
+    if (question.type === "normal") {
+
+        if (correct) {
+            points = baseValue;
+        } else {
+            points = -baseValue;
+        }
+
+    }
+
+
+    /* =====================
+       DOUBLE POINTS
+    ===================== */
+
+    else if (question.type === "double-points") {
+
+        if (correct) {
+            points = baseValue * 2;
+        } else {
+            points = -(baseValue * 2);
+        }
+
+    }
+
+
+    /* =====================
+       DOUBLE LOSS
+    ===================== */
+
+    else if (question.type === "double-loss") {
+
+        if (correct) {
+            points = baseValue;
+        } else {
+            points = -(baseValue * 2);
+        }
+
+    }
+
+
+    players[currentPlayer].score += points;
+
+
+    /* Mark question as used */
+
+    currentQuestion.cell.classList.add("used");
+
+    currentQuestion.cell.textContent = "—";
+
+
+    remainingQuestions--;
+
+
+    closeQuestion();
+
+    updateScoreboard();
+
+
+    /*
+       If all 25 questions are done,
+       show results.
+    */
+
+    if (remainingQuestions <= 0) {
+
+        setTimeout(() => {
+            endGame();
+        }, 400);
+
+        return;
+    }
+
+
+    /*
+       Move to the next player.
+    */
+
+    currentPlayer++;
+
+    if (currentPlayer >= players.length) {
+        currentPlayer = 0;
+    }
+
+    updateCurrentPlayer();
+
+}
+
+
+/* =========================
+   CLOSE QUESTION
+========================= */
+
+function closeQuestion() {
+
+    document.getElementById("questionModal").style.display =
+        "none";
+
+    currentQuestion = null;
+
+}
+
+
+/* =========================
+   UPDATE SCOREBOARD
+========================= */
+
+function updateScoreboard() {
+
+    const scoreboard =
+        document.getElementById("scoreboard");
+
+    scoreboard.innerHTML = "";
+
+
+    players.forEach((player, index) => {
+
+        const card = document.createElement("div");
+
+        card.className = "score-card";
+
+
+        card.innerHTML = `
+            <div class="score-name">
+                ${escapeHTML(player.name)}
+            </div>
+
+            <div class="score">
+                $${player.score}
+            </div>
+        `;
+
+
+        scoreboard.appendChild(card);
+
+    });
+
+}
+
+
+/* =========================
+   UPDATE CURRENT PLAYER
+========================= */
+
+function updateCurrentPlayer() {
+
+    const display =
+        document.getElementById("currentPlayerDisplay");
+
+    if (players.length === 0) {
+        display.textContent = "Player's Turn";
+        return;
+    }
+
+    display.textContent =
+        players[currentPlayer].name + "'s Turn";
+
+}
+
+
+/* =========================
+   END GAME
+========================= */
+
+function endGame() {
+
+    document.getElementById("gameScreen").style.display =
+        "none";
+
+    document.getElementById("resultsScreen").style.display =
+        "flex";
+
+
+    const finalScores =
+        document.getElementById("finalScores");
+
+    finalScores.innerHTML = "";
+
+
+    const sortedPlayers =
+        [...players].sort((a, b) => b.score - a.score);
+
+
+    sortedPlayers.forEach((player, index) => {
+
+        const row = document.createElement("div");
+
+        row.className = "final-player";
+
+
+        if (index === 0) {
+            row.classList.add("winner");
+        }
+
+
+        let place = "";
+
+        if (index === 0) {
+            place = "🏆 ";
+        }
+        else if (index === 1) {
+            place = "🥈 ";
+        }
+        else if (index === 2) {
+            place = "🥉 ";
+        }
+
+
+        row.innerHTML = `
+            <span>
+                ${place}${escapeHTML(player.name)}
+            </span>
+
+            <strong>
+                $${player.score}
+            </strong>
+        `;
+
+
+        finalScores.appendChild(row);
+
+    });
+
+}
+
+
+/* =========================
+   ENTER KEY TO ADD PLAYER
+========================= */
+
+document.getElementById("playerName").addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+            addPlayer();
+        }
+
+    }
+);
+
+
+/* =========================
+   ESCAPE HTML
+========================= */
+
+function escapeHTML(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+
+</script>
+
+</body>
+</html>
